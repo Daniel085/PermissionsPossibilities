@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectrum OAuth Authorization - Daniel's Cable Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 48rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(to right, #374151, #1f2937);
+            padding: 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            text-align: center;
+        }
+        
+        .header svg {
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-text {
+            color: white;
+            font-size: 0.875rem;
+        }
+        
+        .app-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .app-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .app-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .info-box {
+            padding: 1rem;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            color: #374151;
+            position: relative;
+        }
+        
+        .permissions-section {
+            padding: 1.5rem;
+            max-height: 384px;
+            overflow-y: auto;
+        }
+        
+        .permissions-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .permissions-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .permissions-counter {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .category {
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .category-line {
+            flex: 1;
+            height: 1px;
+            background-color: #d1d5db;
+        }
+        
+        .category-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        
+        .permission-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .icon-container {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+        }
+        
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        
+        .icon-check {
+            stroke: #0076BC;
+        }
+        
+        .icon-uncheck {
+            stroke: #9ca3af;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .permission-text {
+            flex: 1;
+            font-size: 0.875rem;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+        
+        .permission-text.unchecked {
+            color: #6b7280;
+        }
+        
+        .footer {
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-cancel {
+            background: white;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #f9fafb;
+        }
+        
+        .btn-authorize {
+            background-color: #0076BC;
+            color: white;
+        }
+        
+        .btn-authorize:hover {
+            background-color: #005a94;
+        }
+        
+        .footer-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .dynamic-indicator {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background-color: #fef3c7;
+            border: 1px dashed #f59e0b;
+            border-radius: 0.25rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            color: #92400e;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .info-box-dynamic {
+            position: relative;
+        }
+        
+        .info-box-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.125rem 0.5rem;
+            background-color: #fef3c7;
+            border: 1px dashed #f59e0b;
+            border-radius: 0.25rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <svg width="180" height="50" viewBox="0 0 180 50">
+                <text x="0" y="35" font-family="Arial, sans-serif" font-size="32" font-weight="600" fill="#77787B" letter-spacing="-0.5">SPECTRUM</text>
+                <polygon points="175,20 180,25 175,30" fill="#0076BC"/>
+            </svg>
+            <div class="header-text">Authorize Application Access</div>
+        </div>
+
+        <!-- App Info -->
+        <div class="app-info">
+            <div class="app-header">
+                <div>
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <path d="M20 10 L32 2 L44 10 L32 50 Z" fill="#0076BC" opacity="0.2"/>
+                        <line x1="32" y1="2" x2="32" y2="50" stroke="#77787B" stroke-width="2"/>
+                        <line x1="24" y1="15" x2="40" y2="15" stroke="#77787B" stroke-width="1.5"/>
+                        <line x1="26" y1="25" x2="38" y2="25" stroke="#77787B" stroke-width="1.5"/>
+                        <line x1="28" y1="35" x2="36" y2="35" stroke="#77787B" stroke-width="1.5"/>
+                        <circle cx="32" cy="52" r="4" fill="#0076BC"/>
+                        <path d="M28 52 L32 58 L36 52" fill="#77787B"/>
+                        <rect x="30" y="0" width="4" height="4" fill="#0076BC" rx="1"/>
+                        <circle cx="32" cy="32" r="30" stroke="#0076BC" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="app-title">
+                        Daniel's Cable Tool
+                        <span class="dynamic-indicator">DYNAMIC</span>
+                    </div>
+                    <div class="app-subtitle">wants to access your Spectrum account</div>
+                </div>
+            </div>
+            <div class="info-box info-box-dynamic">
+                <span class="info-box-badge">DYNAMIC CONTENT</span>
+                <strong>Daniel's Cable Tool</strong> is requesting access to manage your Spectrum network equipment and settings. 
+                You can customize which permissions to grant below.
+            </div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="permissions-section">
+            <div class="permissions-header">
+                <div class="permissions-title">Requested Permissions</div>
+                <div class="permissions-counter" id="counter">17 of 17 selected</div>
+            </div>
+            <div id="permissions-list"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="button-group">
+                <button class="btn btn-cancel">Cancel</button>
+                <button class="btn btn-authorize" id="auth-btn">Authorize (17)</button>
+            </div>
+            <div class="footer-text">
+                By authorizing, you allow Daniel's Cable Tool to access the selected information from your Spectrum account.
+                You can revoke access at any time in your account settings.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const permissions = {
+            'Account Information': [
+                'Read a list of the Spectrum Service locations associated with your account',
+                'Read the address(es) associated with your account'
+            ],
+            'Equipment': [
+                'Read a list of the Spectrum equipment associated with your account',
+                'Read the hardware address(es) of Spectrum equipment',
+                'Update your Spectrum Equipment settings'
+            ],
+            'Wireless Network': [
+                'Read your wireless network configuration settings',
+                'Modify your wireless network configuration settings'
+            ],
+            'Primary Network': [
+                'Read your primary wireless network configuration settings',
+                'Modify the primary wireless network configuration settings'
+            ],
+            'Secondary Network': [
+                'Read your secondary wireless network configuration settings',
+                'Modify the secondary wireless network configuration settings'
+            ],
+            'Device Control': [
+                'Read a list of any pending reboot requests for Spectrum equipment on your account',
+                'Create new reboot requests for Spectrum equipment on your account'
+            ],
+            'Network Configuration': [
+                'Read your network configuration settings',
+                'Create new network configuration settings',
+                'Modify your network configuration settings',
+                'Remove network configuration settings'
+            ]
+        };
+
+        const state = {};
+        let index = 0;
+        const container = document.getElementById('permissions-list');
+
+        Object.entries(permissions).forEach(([category, items]) => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'category';
+            
+            categoryDiv.innerHTML = `
+                <div class="category-header">
+                    <div class="category-line"></div>
+                    <div class="category-name">${category}</div>
+                    <div class="category-line"></div>
+                </div>
+            `;
+            
+            items.forEach(text => {
+                const id = index++;
+                state[id] = true;
+                
+                const item = document.createElement('div');
+                item.className = 'permission-item';
+                item.dataset.id = id;
+                
+                item.innerHTML = `
+                    <div class="icon-container">
+                        <svg class="icon icon-check" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <svg class="icon icon-uncheck hidden" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                    </div>
+                    <div class="permission-text">${text}</div>
+                `;
+                
+                item.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    state[id] = !state[id];
+                    
+                    const checkIcon = this.querySelector('.icon-check');
+                    const uncheckIcon = this.querySelector('.icon-uncheck');
+                    const textEl = this.querySelector('.permission-text');
+                    
+                    if (state[id]) {
+                        checkIcon.classList.remove('hidden');
+                        uncheckIcon.classList.add('hidden');
+                        textEl.classList.remove('unchecked');
+                    } else {
+                        checkIcon.classList.add('hidden');
+                        uncheckIcon.classList.remove('hidden');
+                        textEl.classList.add('unchecked');
+                    }
+                    
+                    const selected = Object.values(state).filter(v => v).length;
+                    const total = Object.keys(state).length;
+                    document.getElementById('counter').textContent = `${selected} of ${total} selected`;
+                    document.getElementById('auth-btn').textContent = `Authorize (${selected})`;
+                });
+                
+                categoryDiv.appendChild(item);
+            });
+            
+            container.appendChild(categoryDiv);
+        });
+    </script>
+</body>
+</html>
